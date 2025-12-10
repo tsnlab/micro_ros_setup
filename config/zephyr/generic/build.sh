@@ -53,23 +53,7 @@ pushd $FW_TARGETDIR >/dev/null
     fi
 
     # Choose configuration based on transport and host
-    if [ -z "$TRANSPORT" ]; then
-        echo "Configuration: No transport set, using prj.conf"
-        export CONF_FILE="prj.conf"
-
-    elif [ "$PLATFORM" = "host" ]; then
-        echo "Configuration: Platform 'host' detected, using host-udp.conf"
-        export CONF_FILE="host-udp.conf"
-
-    else
-        if [ ! -f "$UROS_APP_FOLDER/$TRANSPORT.conf" ]; then
-            echo "Configuration: Specific config for transport $TRANSPORT not found, using prj.conf"
-            export CONF_FILE="prj.conf"
-        else
-            echo "Configuration: Using transport-specific $TRANSPORT.conf"
-            export CONF_FILE="$TRANSPORT.conf"
-        fi
-    fi
+    export CONF_FILE="prj.conf"
 
     UROS_BUILD_CMD="
         west build
@@ -80,7 +64,6 @@ pushd $FW_TARGETDIR >/dev/null
              -G'Unix Makefiles'
              -DCMAKE_VERBOSE_MAKEFILE=$UROS_VERBOSE_BUILD
              -DMICRO_ROS_FIRMWARE_DIR=$FW_TARGETDIR
-             -DMICRO_ROS_TRANSPORT=$TRANSPORT
              ${UROS_EXTRA_BUILD_ARGS[@]}"
 
     if [ "$UROS_VERBOSE_BUILD" = "on" ]; then

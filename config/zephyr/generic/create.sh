@@ -15,7 +15,7 @@ if ! (( $CMAKE_VERSION_MAJOR_NUMBER > 3 || \
 fi
 
 export PATH=~/.local/bin:"$PATH"
-export ZEPHYR_VERSION="v0.12.4"
+export ZEPHYR_VERSION="0.17.0"
 export ARCH=$(uname -m)
 
 # Install west
@@ -23,37 +23,30 @@ pip3 install --user -U west --break-system-packages
 
 pushd $FW_TARGETDIR >/dev/null
 
-    west init zephyrproject
+    west init zephyrproject -m https://github.com/tsnlab/zephyr.git --mr ar4-mk3-rpi4b
     pushd zephyrproject >/dev/null
-        cd zephyr
-          git checkout zephyr-v2.6.0
-        cd ..
         west update
+        west zephyr-export
     popd >/dev/null
 
     pip3 install -r zephyrproject/zephyr/scripts/requirements.txt --ignore-installed --break-system-packages
 
-    if [ "$PLATFORM" = "host" ]; then
-        if [ "$ARCH" = "aarch64" ]; then
-            export TOOLCHAIN_VERSION=zephyr-sdk-0.13.1-linux-aarch64-setup.run
-            export ZEPHYR_VERSION="v0.13.1"
-        else
-            export TOOLCHAIN_VERSION=zephyr-sdk-0.12.4-x86_64-linux-setup.run
-        fi
+    if [ "$ARCH" = "aarch64" ]; then
+        export SDK_VERSION=zephyr-sdk-${ZEPHYR_VERSION}_linux-aarch64.tar.xz
     else
-        if [ "$ARCH" = "aarch64" ]; then
-            export TOOLCHAIN_VERSION=zephyr-toolchain-arm-0.13.1-linux-aarch64-setup.run
-            export ZEPHYR_VERSION="v0.13.1"
-        else
-            export TOOLCHAIN_VERSION=zephyr-toolchain-arm-0.12.4-x86_64-linux-setup.run
-        fi
+        export SDK_VERSION=zephyr-sdk-${ZEPHYR_VERSION}_linux-x86_64.tar.xz
     fi
 
-    wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/$ZEPHYR_VERSION/$TOOLCHAIN_VERSION
-    chmod +x $TOOLCHAIN_VERSION
-    ./$TOOLCHAIN_VERSION -- -d $(pwd)/zephyr-sdk -y
+    wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZEPHYR_VERSION}/$SDK_VERSION
+    tar -xvf $SDK_VERSION
+    mv zephyr-sdk-${ZEPHYR_VERSION} zephyr-sdk
+    pushd zephyr-sdk >/dev/null
+        ./setup.sh -h -c
+        sudo cp sysroots/x86_64-pokysdk-linux/usr/share/openocd/contrib/60-openocd.rules /etc/udev/rules.d
+        sudo udevadm control --reload
+    popd >/dev/null
 
-    rm -rf $TOOLCHAIN_VERSION
+    rm -rf $SDK_VERSION
 
     export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
     export ZEPHYR_SDK_INSTALL_DIR=$FW_TARGETDIR/zephyr-sdk
@@ -70,6 +63,10 @@ pushd $FW_TARGETDIR >/dev/null
     touch mcu_ws/uros/rcl/rcl_yaml_param_parser/COLCON_IGNORE
     touch mcu_ws/uros/rclc/rclc_examples/COLCON_IGNORE
     touch mcu_ws/ros2/ros2_tracing/lttngpy/COLCON_IGNORE
+
+    pushd mcu_ws/uros/rcutils > /dev/null
+        git apply $PREFIX/config/$RTOS/rcutils_update.patch
+    popd >/dev/null
 
     # Upgrade sphinx
     pip install --force-reinstall Sphinx==4.2.0 --break-system-packages

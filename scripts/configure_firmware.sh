@@ -48,6 +48,7 @@ fi
 export CONFIG_NAME=$1
 shift
 
+# TODO: Remove unused arguments
 while [[ $# -gt 0 ]]; do
   key="$1"
 
@@ -63,6 +64,7 @@ while [[ $# -gt 0 ]]; do
       shift # past value
       ;;
       -i|--ip)
+      # TODO: Use this as node IP
       export UROS_AGENT_IP="$2"
       shift # past argument
       shift # past value
