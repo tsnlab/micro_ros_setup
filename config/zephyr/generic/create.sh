@@ -63,6 +63,7 @@ pushd $FW_TARGETDIR >/dev/null
     touch mcu_ws/uros/rcl/rcl_yaml_param_parser/COLCON_IGNORE
     touch mcu_ws/uros/rclc/rclc_examples/COLCON_IGNORE
     touch mcu_ws/ros2/ros2_tracing/lttngpy/COLCON_IGNORE
+    touch mcu_ws/uros/rosidl_typesupport/rosidl_typesupport_c/COLCON_IGNORE # TODO: remove this after implementing typesupports
 
     pushd mcu_ws/uros/rcutils > /dev/null
         git apply $PREFIX/config/$RTOS/rcutils_update.patch
