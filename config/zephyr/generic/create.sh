@@ -52,7 +52,7 @@ pushd $FW_TARGETDIR >/dev/null
     export ZEPHYR_SDK_INSTALL_DIR=$FW_TARGETDIR/zephyr-sdk
 
     # Import repos
-    vcs import --input $PREFIX/config/$RTOS/generic/board.repos
+    vcs import --retry 10 --input $PREFIX/config/$RTOS/generic/board.repos
 
     # ignore broken packages
     touch mcu_ws/ros2/rcl_logging/rcl_logging_spdlog/COLCON_IGNORE
